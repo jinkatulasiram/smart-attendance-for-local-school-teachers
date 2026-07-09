@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — NIAT Schools Attendance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+</head>
+<body class="app-page">
+
+  <!-- Page Loader -->
+  <div id="page-loader" style="position:fixed;inset:0;background:#020617;z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;transition:opacity 0.4s;"><div style="width:44px;height:44px;border-radius:50%;border:3px solid rgba(124,58,237,0.2);border-top-color:#7c3aed;animation:spinRing 0.8s linear infinite;"></div><p style="font-family:Outfit,sans-serif;color:#94a3b8;font-size:0.85rem;">Loading...</p></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span>🏫</span>
+      <div>
+        <span class="sb-name">NIAT Schools</span>
+        <span class="sb-sub">Attendance System</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sb-link active" id="sb-dash">
+        <span class="sb-icon">📊</span> Dashboard
+      </a>
+      <a href="attendance.html" class="sb-link" id="sb-att">
+        <span class="sb-icon">📍</span> Mark Attendance
+      </a>
+
+
+      <a href="my-timetable.html" class="sb-link" id="sb-my-tt">
+        <span class="sb-icon">📅</span> My Timetable
+      </a>
+      <a href="timetable.html" class="sb-link" id="sb-timetable" style="display:none;">
+        <span class="sb-icon">📅</span> Timetable Manager
+      </a>
+      <a href="#" class="sb-link" id="sb-settings">
+        <span class="sb-icon">⚙️</span> Settings
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-info" id="sidebar-user">
+        <div class="user-avatar" id="user-avatar-sb">TR</div>
+        <div>
+          <p class="user-name" id="user-name-sb">Tulasi Ram</p>
+          <p class="user-role" id="user-role-sb">Admin</p>
+        </div>
+      </div>
+      <button class="logout-btn" id="logout-btn">Logout</button>
+    </div>
+  </aside>
+
+  <!-- HAMBURGER -->
+  <button class="hamburger-app" id="ham-app">☰</button>
+  <div class="sidebar-overlay" id="sb-overlay"></div>
+
+  <!-- MAIN -->
+  <main class="app-main">
+    <div class="app-header">
+      <div>
+        <h1 class="app-title" id="dash-greeting">Good Morning! 👋</h1>
+        <p class="app-sub" id="dash-date">Monday, 15 June 2024</p>
+      </div>
+      <div class="header-right">
+        <div class="today-badge">Today's Date: <span id="header-date"></span></div>
+      </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-cards" id="stat-cards">
+      <div class="scard green" id="sc-present">
+        <div class="scard-icon">✅</div>
+        <div>
+          <p class="scard-label">Present Today</p>
+          <p class="scard-val" id="sc-present-val">0</p>
+        </div>
+      </div>
+      <div class="scard red" id="sc-absent">
+        <div class="scard-icon">❌</div>
+        <div>
+          <p class="scard-label">Absent Today</p>
+          <p class="scard-val" id="sc-absent-val">0</p>
+        </div>
+      </div>
+
+      <div class="scard purple" id="sc-pct">
+        <div class="scard-icon">📊</div>
+        <div>
+            <div class="card-subtitle">Attendance Percent</div>
+          <p class="scard-val" id="sc-pct-val" style="display:flex;align-items:center;gap:8px;">
+            <span>0%</span> <span id="sc-pct-delta" style="font-size:0.9rem;font-weight:600;"></span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- (Admin location card moved to admin.html) -->
+
+    <!-- CHARTS ROW (Admin Only) -->
+    <div class="charts-row" id="admin-charts" style="display:none;">
+      <div class="chart-card" id="chart-donut-card">
+        <h3>Today's Overview</h3>
+        <div class="chart-wrap">
+          <canvas id="donutChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card wide" id="chart-week-card">
+        <h3>Weekly Attendance</h3>
+        <div class="chart-wrap tall">
+          <canvas id="weekChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALENDAR ROW (Teacher Only) -->
+    <div class="chart-card" id="teacher-calendar" style="display:none; margin-bottom:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3>📅 My Monthly Attendance</h3>
+        <div id="cal-month-name" style="font-weight:600;color:var(--brand);font-size:1.1rem;">Month</div>
+      </div>
+      <div id="calendar-grid" style="display:grid;grid-template-columns:repeat(7, 1fr);gap:8px;">
+        <!-- Days of week header -->
+        <div style="text-align:center;font-weight:600;color:var(--muted);font-size:0.85rem;">Sun</div>
+        <div style="text-align:center;font-weight:600;color:var(--muted);font-size:0.85rem;">Mon</div>
+        <div style="text-align:center;font-weight:600;color:var(--muted);font-size:0.85rem;">Tue</div>
+        <div style="text-align:center;font-weight:600;color:var(--muted);font-size:0.85rem;">Wed</div>
+        <div style="text-align:center;font-weight:600;color:var(--muted);font-size:0.85rem;">Thu</div>
+        <div style="text-align:center;font-weight:600;color:var(--muted);font-size:0.85rem;">Fri</div>
+        <div style="text-align:center;font-weight:600;color:var(--muted);font-size:0.85rem;">Sat</div>
+        <!-- Days generated by JS -->
+      </div>
+      <div style="display:flex;gap:16px;margin-top:16px;font-size:0.85rem;color:var(--text);">
+        <span style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#10b981;"></span> Both Sessions (Present)</span>
+        <span style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#34d399;"></span> 1 Session (Half Day)</span>
+        <span style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#ef4444;"></span> Absent</span>
+      </div>
+    </div>
+
+    <!-- TODAY'S ATTENDANCE TABLE -->
+    <div class="table-card" id="today-table-card">
+      <div class="table-header">
+        <h3>Attendance for Every Teacher</h3>
+        <input type="text" class="table-search" id="today-search" placeholder="Search teacher..."/>
+      </div>
+      <div class="table-wrap">
+        <table class="att-table" id="today-table">
+          <thead>
+            <tr>
+              <th width="40">#</th>
+              <th>Teacher Name</th>
+              <th>Employee ID</th>
+              <th>Department</th>
+              <th>Time</th>
+              <th>Session</th>
+              <th>Status</th>
+              <th>Location</th>
+            </tr>
+          </thead>
+          <tbody id="today-tbody">
+            <tr><td colspan="8" class="empty-row">No attendance records for today</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TODAY'S TIMETABLE CARD -->
+    <div class="table-card" id="todays-timetable-card" style="margin-top:24px;">
+      <div class="table-header" style="border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <h3 style="display:flex;align-items:center;gap:10px;">📅 Today's Timetable</h3>
+        <span id="tt-today-day" style="font-size:0.85rem;color:#7c3aed;font-weight:600;background:rgba(124,58,237,0.12);padding:6px 14px;border-radius:20px;"></span>
+      </div>
+      <div id="tt-today-content">
+        <p style="color:#64748b;font-size:0.9rem;text-align:center;">Loading timetable...</p>
+      </div>
+    </div>
+
+    <!-- ANNOUNCEMENTS CARD -->
+    <div class="table-card" id="announcements-card" style="margin-top:24px;">
+      <div class="table-header" style="border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:16px;margin-bottom:16px;">
+        <h3 style="display:flex;align-items:center;gap:10px;">📢 Announcements</h3>
+      </div>
+
+      <!-- Admin Post Box -->
+      <div id="admin-announce-box" style="display:none;margin-bottom:20px;">
+        <textarea id="announce-input" placeholder="Type an announcement for all teachers..." rows="3"
+          style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+          color:#f1f5f9;padding:14px;border-radius:12px;font-family:inherit;font-size:0.95rem;
+          resize:vertical;outline:none;"></textarea>
+        <button id="btn-post-announce" style="margin-top:10px;padding:10px 26px;background:linear-gradient(135deg,#7c3aed,#4f46e5);
+          color:#fff;border:none;border-radius:10px;font-size:0.95rem;font-weight:600;cursor:pointer;
+          box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:transform 0.15s;">
+          📤 Post Announcement
+        </button>
+      </div>
+
+      <!-- Announcements Feed -->
+      <div id="announce-feed" style="display:flex;flex-direction:column;gap:14px;">
+        <p style="color:#64748b;font-size:0.9rem;text-align:center;">No announcements yet.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- (Settings Modal moved to admin.html) -->
+
+  <script src="app.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

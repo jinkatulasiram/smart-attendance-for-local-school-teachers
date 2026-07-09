@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Timetable — NIAT Schools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <style>
+    /* ── Teacher Timetable Styles ── */
+    .day-tabs {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
+    }
+    .day-tab {
+      padding: 8px 18px; border-radius: 20px; font-size: 0.85rem;
+      font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04); color: #94a3b8;
+      transition: all 0.2s; font-family: inherit;
+    }
+    .day-tab:hover { background: rgba(124,58,237,0.12); color: #a78bfa; border-color: rgba(124,58,237,0.3); }
+    .day-tab.active {
+      background: linear-gradient(135deg,#7c3aed,#4f46e5);
+      color: #fff; border-color: transparent;
+      box-shadow: 0 4px 14px rgba(124,58,237,0.4);
+    }
+    .day-tab.today-tab { border-color: #10b981; color: #10b981; }
+    .day-tab.today-tab.active { background: linear-gradient(135deg,#10b981,#059669); box-shadow: 0 4px 14px rgba(16,185,129,0.4); }
+
+    /* Period cards */
+    .periods-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .period-card {
+      background: rgba(124,58,237,0.07);
+      border: 1px solid rgba(124,58,237,0.18);
+      border-radius: 14px; padding: 20px;
+      transition: transform 0.15s, box-shadow 0.15s;
+      position: relative; overflow: hidden;
+    }
+    .period-card::before {
+      content: ''; position: absolute; top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: linear-gradient(180deg,#7c3aed,#4f46e5);
+      border-radius: 4px 0 0 4px;
+    }
+    .period-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,58,237,0.2); }
+    .period-card .pc-num {
+      font-size: 0.72rem; color: #7c3aed; font-weight: 700;
+      letter-spacing: 0.5px; margin-bottom: 8px; text-transform: uppercase;
+    }
+    .period-card .pc-subject {
+      font-size: 1.1rem; font-weight: 700; color: #f1f5f9; margin-bottom: 6px;
+    }
+    .period-card .pc-class {
+      font-size: 0.82rem; color: #94a3b8;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .period-card .pc-time {
+      font-size: 0.78rem; color: #64748b; margin-top: 8px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .period-card.today-card::before { background: linear-gradient(180deg,#10b981,#059669); }
+    .period-card.today-card { border-color: rgba(16,185,129,0.25); background: rgba(16,185,129,0.05); }
+
+    /* Full week table */
+    .week-table-wrap { overflow-x: auto; }
+    .week-table {
+      min-width: 700px; width: 100%; border-collapse: collapse; font-size: 0.86rem;
+    }
+    .week-table th {
+      background: rgba(124,58,237,0.15); color: #a78bfa;
+      padding: 12px 10px; text-align: center;
+      border: 1px solid rgba(255,255,255,0.07); font-weight: 700;
+    }
+    .week-table th.today-col { background: rgba(16,185,129,0.15); color: #10b981; }
+    .week-table td {
+      border: 1px solid rgba(255,255,255,0.05); padding: 10px 12px;
+      vertical-align: top; text-align: center;
+    }
+    .week-table .period-col {
+      background: rgba(255,255,255,0.02); color: #64748b;
+      font-weight: 600; font-size: 0.78rem; white-space: nowrap;
+    }
+    .week-table .filled-slot {
+      background: rgba(124,58,237,0.08);
+    }
+    .week-table .filled-slot.today-slot { background: rgba(16,185,129,0.08); }
+    .week-slot-subject { color: #f1f5f9; font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; margin: 0 auto; display: block; }
+    .week-slot-class { color: #7c3aed; font-size: 0.72rem; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; margin: 0 auto; display: block; }
+    .week-slot-time { color: #64748b; font-size: 0.7rem; margin-top: 2px; }
+
+    .no-periods-msg {
+      text-align: center; padding: 48px 20px; color: #334155;
+    }
+    .no-periods-msg .np-icon { font-size: 2.5rem; margin-bottom: 10px; }
+  </style>
+</head>
+<body class="app-page">
+
+  <!-- Page Loader -->
+  <div id="page-loader" style="position:fixed;inset:0;background:#020617;z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;transition:opacity 0.4s;"><div style="width:44px;height:44px;border-radius:50%;border:3px solid rgba(124,58,237,0.2);border-top-color:#7c3aed;animation:spinRing 0.8s linear infinite;"></div><p style="font-family:Outfit,sans-serif;color:#94a3b8;font-size:0.85rem;">Loading...</p></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span>🏫</span>
+      <div>
+        <span class="sb-name">NIAT Schools</span>
+        <span class="sb-sub">Attendance System</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sb-link" id="sb-dash">
+        <span class="sb-icon">📊</span> Dashboard
+      </a>
+      <a href="attendance.html" class="sb-link" id="sb-att">
+        <span class="sb-icon">📍</span> Mark Attendance
+      </a>
+      <a href="my-timetable.html" class="sb-link active" id="sb-my-tt">
+        <span class="sb-icon">📅</span> My Timetable
+      </a>
+      <a href="timetable.html" class="sb-link" id="sb-timetable" style="display:none;">
+        <span class="sb-icon">📅</span> Timetable Manager
+      </a>
+      <a href="#" class="sb-link" id="sb-settings">
+        <span class="sb-icon">⚙️</span> Settings
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-info" id="sidebar-user">
+        <div class="user-avatar" id="user-avatar-sb">TR</div>
+        <div>
+          <p class="user-name" id="user-name-sb">Teacher</p>
+          <p class="user-role" id="user-role-sb">Teacher</p>
+        </div>
+      </div>
+      <button class="logout-btn" id="logout-btn">Logout</button>
+    </div>
+  </aside>
+
+  <!-- HAMBURGER -->
+  <button class="hamburger-app" id="ham-app">☰</button>
+  <div class="sidebar-overlay" id="sb-overlay"></div>
+
+  <!-- MAIN -->
+  <main class="app-main">
+    <div class="app-header">
+      <div>
+        <h1 class="app-title" id="tt-page-title">📅 My Weekly Timetable</h1>
+        <p class="app-sub" id="tt-page-sub">Your assigned periods across all classes</p>
+      </div>
+    </div>
+
+    <!-- View Toggle -->
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
+      <div class="day-tabs" id="day-tabs"></div>
+      <div style="display:flex;gap:8px;">
+        <button id="view-day-btn" onclick="setView('day')"
+          style="padding:8px 16px;border-radius:10px;font-size:0.82rem;font-weight:600;cursor:pointer;
+          background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;font-family:inherit;">
+          Day View
+        </button>
+        <button id="view-week-btn" onclick="setView('week')"
+          style="padding:8px 16px;border-radius:10px;font-size:0.82rem;font-weight:600;cursor:pointer;
+          background:rgba(255,255,255,0.06);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);font-family:inherit;">
+          Week View
+        </button>
+      </div>
+    </div>
+
+    <!-- Timetable Content -->
+    <div class="table-card" style="padding:24px;">
+      <div id="tt-teacher-content">
+        <p style="color:#64748b;text-align:center;">Loading your timetable...</p>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+  <script src="my-timetable.js"></script>
+</body>
+</html>

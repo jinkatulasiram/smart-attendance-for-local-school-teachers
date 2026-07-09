@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reports — NIAT Schools Attendance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+</head>
+<body class="app-page">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span>🏫</span>
+      <div><span class="sb-name">NIAT Schools</span><span class="sb-sub">Attendance System</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sb-link" id="sb-dash"><span class="sb-icon">📊</span> Dashboard</a>
+      <a href="attendance.html" class="sb-link" id="sb-att"><span class="sb-icon">📍</span> Mark Attendance</a>
+
+      <a href="reports.html" class="sb-link active" id="sb-reports"><span class="sb-icon">📈</span> Reports</a>
+      <a href="#" class="sb-link" id="sb-settings"><span class="sb-icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-info"><div class="user-avatar" id="user-avatar-sb">TR</div><div><p class="user-name" id="user-name-sb">Tulasi Ram</p><p class="user-role" id="user-role-sb">Admin</p></div></div>
+      <button class="logout-btn" id="logout-btn">Logout</button>
+    </div>
+  </aside>
+  <button class="hamburger-app" id="ham-app">☰</button>
+  <div class="sidebar-overlay" id="sb-overlay"></div>
+
+  <main class="app-main">
+    <div class="app-header">
+      <div>
+        <h1 class="app-title">Reports 📈</h1>
+        <p class="app-sub">Attendance analytics and summaries</p>
+      </div>
+      <div class="header-right">
+        <input type="date" id="report-date" class="date-picker"/>
+        <button class="btn-outline-sm" id="export-btn">⬇ Export CSV</button>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="stat-cards" id="report-stats">
+      <div class="scard green"><div class="scard-icon">✅</div><div><p class="scard-label">Best Attendance</p><p class="scard-val" id="rp-best">—</p></div></div>
+      <div class="scard red"><div class="scard-icon">⚠️</div><div><p class="scard-label">Needs Attention (&lt;75%)</p><p class="scard-val" id="rp-warn">0</p></div></div>
+      <div class="scard blue"><div class="scard-icon">📅</div><div><p class="scard-label">Days Tracked</p><p class="scard-val" id="rp-days">0</p></div></div>
+      <div class="scard purple"><div class="scard-icon">📊</div><div><p class="scard-label">Avg Attendance</p><p class="scard-val" id="rp-avg">0%</p></div></div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+      <div class="chart-card wide" id="bar-chart-card">
+        <h3>Per-Student Attendance %</h3>
+        <div class="chart-wrap tall">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card" id="trend-chart-card">
+        <h3>30-Day Trend</h3>
+        <div class="chart-wrap tall">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full Attendance Table -->
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Detailed Attendance Report</h3>
+        <input type="text" class="table-search" id="rep-search" placeholder="Search student..."/>
+      </div>
+      <div class="table-wrap">
+        <table class="att-table" id="report-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Roll No</th>
+              <th>Class</th>
+              <th>Present</th>
+              <th>Absent</th>
+              <th>Total Days</th>
+              <th>Percentage</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="report-tbody">
+            <tr><td colspan="8" class="empty-row">No data available</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="app.js"></script>
+  <script src="reports.js"></script>
+</body>
+</html>

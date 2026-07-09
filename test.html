@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Firebase Connection Test — NIAT Schools</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: #020617;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: #0a0f1e;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 600px;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 24px; color: #7c3aed; }
+    .test-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    .test-label { font-size: 0.9rem; font-weight: 600; }
+    .test-status {
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 4px 14px;
+      border-radius: 20px;
+      min-width: 100px;
+      text-align: center;
+    }
+    .pending  { background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+    .ok       { background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+    .fail     { background: rgba(239,68,68,0.1);  color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+    .err-box {
+      margin-top: 16px;
+      padding: 14px 16px;
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      color: #f87171;
+      white-space: pre-wrap;
+      word-break: break-all;
+      display: none;
+    }
+    .fix-box {
+      margin-top: 16px;
+      padding: 16px;
+      background: rgba(124,58,237,0.08);
+      border: 1px solid rgba(124,58,237,0.25);
+      border-radius: 10px;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      display: none;
+    }
+    .fix-box strong { color: #a78bfa; }
+    code {
+      background: rgba(255,255,255,0.07);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: #06b6d4;
+    }
+    .btn {
+      margin-top: 20px;
+      padding: 12px 28px;
+      background: linear-gradient(135deg,#7c3aed,#06b6d4);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Outfit',sans-serif;
+    }
+    .btn:hover { opacity: 0.85; }
+    .summary {
+      margin-top: 20px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .summary.all-ok  { background:rgba(16,185,129,0.1);  color:#10b981; border:1px solid rgba(16,185,129,0.3); }
+    .summary.has-err { background:rgba(239,68,68,0.1);   color:#ef4444; border:1px solid rgba(239,68,68,0.3); }
+    a { color:#7c3aed; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>🔥 Firebase Connection Test</h1>
+
+  <div class="test-row">
+    <span class="test-label">1. Firebase Initialized</span>
+    <span class="test-status pending" id="t1">Testing...</span>
+  </div>
+
+  <div class="test-row">
+    <span class="test-label">2. Firestore Connected</span>
+    <span class="test-status pending" id="t2">Testing...</span>
+  </div>
+
+  <div class="test-row">
+    <span class="test-label">3. Firestore READ allowed</span>
+    <span class="test-status pending" id="t3">Testing...</span>
+  </div>
+
+  <div class="test-row">
+    <span class="test-label">4. Firestore WRITE allowed</span>
+    <span class="test-status pending" id="t4">Testing...</span>
+  </div>
+
+  <div class="test-row">
+    <span class="test-label">5. Auth — Logged In User</span>
+    <span class="test-status pending" id="t5">Testing...</span>
+  </div>
+
+  <div class="test-row">
+    <span class="test-label">6. Write Attendance Record</span>
+    <span class="test-status pending" id="t6">Testing...</span>
+  </div>
+
+  <div id="err-box" class="err-box"></div>
+  <div id="fix-box" class="fix-box"></div>
+  <div id="summary" class="summary"></div>
+
+  <button class="btn" onclick="runTests()">🔁 Run Tests Again</button>
+  <br/><br/>
+  <a href="attendance.html">← Back to Attendance</a>
+</div>
+
+<script>
+function setStatus(id, state, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className   = 'test-status ' + state;
+}
+
+function showError(errMsg, fixMsg) {
+  const eb = document.getElementById('err-box');
+  const fb = document.getElementById('fix-box');
+  eb.style.display = 'block';
+  eb.textContent   = '❌ Error:\n' + errMsg;
+  if (fixMsg) {
+    fb.style.display = 'block';
+    fb.innerHTML     = fixMsg;
+  }
+}
+
+async function runTests() {
+  document.getElementById('err-box').style.display  = 'none';
+  document.getElementById('fix-box').style.display  = 'none';
+  document.getElementById('summary').style.display  = 'none';
+  ['t1','t2','t3','t4','t5','t6'].forEach(id =>
+    setStatus(id, 'pending', 'Testing...'));
+
+  let allOk = true;
+
+  // TEST 1: Firebase initialized
+  try {
+    if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+      setStatus('t1', 'ok', '✓ OK');
+    } else {
+      throw new Error('Firebase not initialized (firebase.apps is empty)');
+    }
+  } catch(e) {
+    setStatus('t1', 'fail', '✗ FAIL');
+    showError(e.message, '<strong>Fix:</strong> Check that <code>firebase-config.js</code> is loading correctly.');
+    allOk = false;
+  }
+
+  // TEST 2: Firestore instance
+  try {
+    if (window.db && typeof window.db.collection === 'function') {
+      setStatus('t2', 'ok', '✓ OK');
+    } else {
+      throw new Error('window.db is undefined. firebase-config.js may not have loaded.');
+    }
+  } catch(e) {
+    setStatus('t2', 'fail', '✗ FAIL');
+    showError(e.message, '<strong>Fix:</strong> Ensure <code>firebase-config.js</code> runs <code>window.db = firebase.firestore();</code>');
+    allOk = false;
+  }
+
+  // TEST 3: Firestore READ
+  try {
+    await db.collection('_test').limit(1).get();
+    setStatus('t3', 'ok', '✓ OK');
+  } catch(e) {
+    setStatus('t3', 'fail', '✗ FAIL — ' + e.code);
+    if (e.code === 'permission-denied') {
+      showError(
+        'permission-denied — Firestore Rules are blocking ALL reads',
+        `<strong>🔒 Fix Firestore Rules Now:</strong><br/>
+        1. Go to <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a><br/>
+        2. Select <strong>niat-schools</strong> project<br/>
+        3. Click <strong>Firestore Database</strong> in left menu<br/>
+        4. Click <strong>Rules</strong> tab<br/>
+        5. Replace ALL rules with:<br/><br/>
+        <code>rules_version = '2';<br/>
+service cloud.firestore {<br/>
+&nbsp;&nbsp;match /databases/{database}/documents {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;match /{document=**} {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allow read, write: if request.auth != null;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;}<br/>
+}</code><br/><br/>
+        6. Click <strong>Publish</strong> button`
+      );
+    } else {
+      showError('READ failed: ' + e.message, '');
+    }
+    allOk = false;
+  }
+
+  // TEST 4: Firestore WRITE (to a test collection)
+  if (allOk) {
+    try {
+      const ref = await db.collection('_test').add({
+        test: true, ts: new Date().toISOString()
+      });
+      await ref.delete(); // clean up
+      setStatus('t4', 'ok', '✓ OK');
+    } catch(e) {
+      setStatus('t4', 'fail', '✗ FAIL — ' + e.code);
+      if (e.code === 'permission-denied') {
+        showError(
+          'permission-denied — Firestore Rules are blocking WRITES',
+          `<strong>🔒 Same fix as above — update Firestore Rules to allow authenticated writes.</strong><br/>
+          The rule <code>allow read, write: if request.auth != null;</code> will fix this.`
+        );
+      } else {
+        showError('WRITE failed: ' + e.message, '');
+      }
+      allOk = false;
+    }
+  } else {
+    setStatus('t4', 'pending', 'Skipped');
+  }
+
+  // TEST 5: Auth state
+  await new Promise(resolve => {
+    const unsub = auth.onAuthStateChanged(user => {
+      unsub();
+      if (user) {
+        setStatus('t5', 'ok', '✓ ' + user.email);
+      } else {
+        setStatus('t5', 'fail', '✗ Not logged in');
+        showError(
+          'No logged-in user found.',
+          '<strong>Fix:</strong> <a href="login.html">Login first</a> then come back to this test page.'
+        );
+        allOk = false;
+      }
+      resolve();
+    });
+  });
+
+  // TEST 6: Write actual attendance record (if logged in)
+  const user = auth.currentUser;
+  if (user && allOk) {
+    try {
+      const ref = await db.collection('attendance').add({
+        userId:    user.uid,
+        userName:  user.email,
+        userRoll:  'TEST',
+        userClass: 'TEST',
+        date:      new Date().toISOString().slice(0,10),
+        time:      new Date().toLocaleTimeString('en-IN'),
+        timestamp: new Date().toISOString(),
+        lat:       0, lng: 0, distanceM: 0,
+        status:    'test-record'
+      });
+      // Delete the test record immediately
+      await ref.delete();
+      setStatus('t6', 'ok', '✓ Write + Delete OK');
+    } catch(e) {
+      setStatus('t6', 'fail', '✗ FAIL — ' + e.code);
+      showError('Attendance write failed: ' + e.message + '\nCode: ' + e.code, '');
+      allOk = false;
+    }
+  } else {
+    setStatus('t6', 'pending', allOk ? 'Skipped (not logged in)' : 'Skipped');
+  }
+
+  // Summary
+  const sum = document.getElementById('summary');
+  sum.style.display = 'block';
+  if (allOk) {
+    sum.className   = 'summary all-ok';
+    sum.textContent = '✅ All tests passed! Firebase is working correctly. Attendance should save.';
+  } else {
+    sum.className   = 'summary has-err';
+    sum.textContent = '❌ Some tests failed. See the error above and fix it — then click "Run Tests Again".';
+  }
+}
+
+// Auto-run on load
+window.addEventListener('load', runTests);
+</script>
+</body>
+</html>

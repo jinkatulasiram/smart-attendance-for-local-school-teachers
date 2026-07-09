@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Timetable Manager — NIAT Schools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <style>
+    /* ── Timetable Page Styles ── */
+    .tt-toolbar {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .tt-class-select {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      color: #f1f5f9; padding: 10px 16px; border-radius: 10px;
+      font-family: inherit; font-size: 0.95rem; min-width: 200px; cursor: pointer;
+    }
+    .tt-class-select:focus { outline: 2px solid #7c3aed; }
+    .tt-class-select option { background-color: #0f172a; color: #f1f5f9; }
+    .btn-add-class {
+      background: linear-gradient(135deg,#7c3aed,#4f46e5); color: #fff;
+      border: none; border-radius: 10px; padding: 10px 20px;
+      font-size: 0.9rem; font-weight: 600; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(124,58,237,0.35); transition: transform 0.15s;
+    }
+    .btn-add-class:hover { transform: translateY(-1px); }
+    .btn-del-class {
+      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+      color: #ef4444; border-radius: 10px; padding: 10px 20px;
+      font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    }
+
+    /* Grid */
+    .tt-grid-wrap { overflow-x: auto; }
+    .tt-grid {
+      min-width: 860px; border-collapse: collapse; width: 100%;
+      font-size: 0.88rem;
+    }
+    .tt-grid th {
+      background: rgba(124,58,237,0.15); color: #a78bfa;
+      padding: 12px 10px; text-align: center; font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.07); white-space: nowrap;
+    }
+    .tt-grid td {
+      border: 1px solid rgba(255,255,255,0.06); padding: 0;
+      vertical-align: top;
+    }
+    .tt-period-label {
+      background: rgba(255,255,255,0.03); color: #64748b;
+      padding: 14px 12px; text-align: center; font-weight: 600;
+      font-size: 0.8rem; white-space: nowrap;
+    }
+    .tt-cell {
+      padding: 10px; min-height: 64px; cursor: pointer;
+      transition: background 0.15s; display: flex; flex-direction: column;
+      gap: 4px; align-items: center; justify-content: center; text-align: center;
+    }
+    .tt-cell:hover { background: rgba(124,58,237,0.12); }
+    .tt-cell.filled { background: rgba(124,58,237,0.08); }
+    .tt-subject { color: #f1f5f9; font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; margin: 0 auto; display: block; }
+    .tt-teacher { color: #94a3b8; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; margin: 0 auto; display: block; }
+    .tt-empty-hint { color: #334155; font-size: 0.75rem; }
+    .tt-add-period-row td {
+      padding: 8px; text-align: center;
+    }
+    .btn-add-period {
+      background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.15);
+      color: #64748b; border-radius: 8px; padding: 8px 20px;
+      font-size: 0.82rem; cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-add-period:hover { color: #a78bfa; border-color: #7c3aed; background: rgba(124,58,237,0.08); }
+
+    /* Modal */
+    .tt-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px); z-index: 9000;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tt-modal {
+      background: #0f172a; border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 18px; padding: 28px 32px; width: 100%; max-width: 440px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    }
+    .tt-modal h3 {
+      color: #f1f5f9; font-size: 1.1rem; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .tt-modal label { color: #94a3b8; font-size: 0.82rem; display: block; margin-bottom: 5px; }
+    .tt-modal input, .tt-modal select {
+      width: 100%; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12); color: #f1f5f9;
+      padding: 11px 14px; border-radius: 10px; font-family: inherit;
+      font-size: 0.95rem; margin-bottom: 16px; box-sizing: border-box;
+    }
+    .tt-modal input:focus, .tt-modal select:focus { outline: 2px solid #7c3aed; }
+    .tt-modal select option { background-color: #0f172a; color: #f1f5f9; }
+    .tt-modal-actions { display: flex; gap: 10px; margin-top: 6px; }
+    .btn-save-cell {
+      flex: 1; background: linear-gradient(135deg,#7c3aed,#4f46e5); color: #fff;
+      border: none; border-radius: 10px; padding: 12px;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer;
+    }
+    .btn-clear-cell {
+      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+      color: #ef4444; border-radius: 10px; padding: 12px 18px;
+      font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    }
+    .btn-cancel-modal {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: #94a3b8; border-radius: 10px; padding: 12px 18px;
+      font-size: 0.9rem; cursor: pointer;
+    }
+    .tt-empty-state {
+      text-align: center; padding: 60px 20px; color: #334155;
+    }
+    .tt-empty-state .tt-es-icon { font-size: 3rem; margin-bottom: 12px; }
+    .tt-empty-state p { font-size: 1rem; }
+  </style>
+</head>
+<body class="app-page">
+
+  <!-- Page Loader -->
+  <div id="page-loader" style="position:fixed;inset:0;background:#020617;z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;transition:opacity 0.4s;"><div style="width:44px;height:44px;border-radius:50%;border:3px solid rgba(124,58,237,0.2);border-top-color:#7c3aed;animation:spinRing 0.8s linear infinite;"></div><p style="font-family:Outfit,sans-serif;color:#94a3b8;font-size:0.85rem;">Loading...</p></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span>🏫</span>
+      <div>
+        <span class="sb-name">NIAT Schools</span>
+        <span class="sb-sub">Attendance System</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sb-link" id="sb-dash">
+        <span class="sb-icon">📊</span> Dashboard
+      </a>
+      <a href="attendance.html" class="sb-link" id="sb-att">
+        <span class="sb-icon">📍</span> Mark Attendance
+      </a>
+      <a href="my-timetable.html" class="sb-link" id="sb-my-tt" style="display:none;">
+        <span class="sb-icon">📅</span> My Timetable
+      </a>
+      <a href="timetable.html" class="sb-link active" id="sb-timetable" style="display:none;">
+        <span class="sb-icon">📅</span> Timetable Manager
+      </a>
+      <a href="admin.html" class="sb-link" id="sb-settings" style="display:none;">
+        <span class="sb-icon">⚙️</span> Settings
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-info" id="sidebar-user">
+        <div class="user-avatar" id="user-avatar-sb">TR</div>
+        <div>
+          <p class="user-name" id="user-name-sb">Admin</p>
+          <p class="user-role" id="user-role-sb">Admin</p>
+        </div>
+      </div>
+      <button class="logout-btn" id="logout-btn">Logout</button>
+    </div>
+  </aside>
+
+  <!-- HAMBURGER -->
+  <button class="hamburger-app" id="ham-app">☰</button>
+  <div class="sidebar-overlay" id="sb-overlay"></div>
+
+  <!-- MAIN -->
+  <main class="app-main">
+    <div class="app-header">
+      <div>
+        <h1 class="app-title">📅 Class Timetable Manager</h1>
+        <p class="app-sub">Assign subjects and teachers for each class, each day</p>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="tt-toolbar">
+      <select id="tt-class-select" class="tt-class-select">
+        <option value="">— Select a Class —</option>
+      </select>
+      <button id="btn-add-class" class="btn-add-class">＋ Add New Class</button>
+      <button id="btn-del-class" class="btn-del-class">🗑 Delete Class</button>
+    </div>
+
+    <!-- Timetable Card -->
+    <div class="table-card" style="padding:24px;">
+      <div id="tt-content">
+        <div class="tt-empty-state">
+          <div class="tt-es-icon">📅</div>
+          <p>Select or create a class to manage its timetable</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Edit Period Modal -->
+  <div id="tt-modal" class="tt-modal-overlay" style="display:none;">
+    <div class="tt-modal">
+      <h3>✏️ Assign Period — <span id="modal-period-label"></span></h3>
+      <label>Subject</label>
+      <input type="text" id="modal-subject" placeholder="e.g. Mathematics, English..."/>
+      <label>Assign Teacher</label>
+      <select id="modal-teacher">
+        <option value="">— Select Teacher —</option>
+      </select>
+      <label>Time (optional)</label>
+      <input type="text" id="modal-time" placeholder="e.g. 9:00 AM – 9:45 AM"/>
+      <div class="tt-modal-actions">
+        <button class="btn-save-cell" id="modal-save-btn">💾 Save</button>
+        <button class="btn-clear-cell" id="modal-clear-btn">✕ Clear</button>
+        <button class="btn-cancel-modal" id="modal-cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script src="timetable.js"></script>
+</body>
+</html>

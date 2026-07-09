@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mark Attendance — NIAT Schools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+</head>
+<body class="app-page">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span>🏫</span>
+      <div>
+        <span class="sb-name">NIAT Schools</span>
+        <span class="sb-sub">Attendance System</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sb-link" id="sb-dash">
+        <span class="sb-icon">📊</span> Dashboard
+      </a>
+      <a href="attendance.html" class="sb-link active" id="sb-att">
+        <span class="sb-icon">📍</span> Mark Attendance
+      </a>
+
+
+      <a href="my-timetable.html" class="sb-link" id="sb-my-tt">
+        <span class="sb-icon">📅</span> My Timetable
+      </a>
+      <a href="timetable.html" class="sb-link" id="sb-timetable" style="display:none;">
+        <span class="sb-icon">📅</span> Timetable Manager
+      </a>
+      <a href="#" class="sb-link" id="sb-settings">
+        <span class="sb-icon">⚙️</span> Settings
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-info" id="sidebar-user">
+        <div class="user-avatar" id="user-avatar-sb">TR</div>
+        <div>
+          <p class="user-name" id="user-name-sb">Tulasi Ram</p>
+          <p class="user-role" id="user-role-sb">Student</p>
+        </div>
+      </div>
+      <button class="logout-btn" id="logout-btn">Logout</button>
+    </div>
+  </aside>
+
+  <button class="hamburger-app" id="ham-app">☰</button>
+  <div class="sidebar-overlay" id="sb-overlay"></div>
+
+  <!-- MAIN -->
+  <main class="app-main">
+    <div class="app-header">
+      <div>
+        <h1 class="app-title">Mark Attendance 📍</h1>
+        <p class="app-sub" id="att-date"></p>
+      </div>
+    </div>
+
+    <div class="attendance-center">
+
+      <!-- STATUS CARD -->
+      <div class="att-card" id="att-card">
+        <div class="att-pulse-ring" id="att-pulse">
+          <div class="att-pulse-inner">
+            <span id="att-icon">📍</span>
+          </div>
+        </div>
+
+        <h2 class="att-card-title" id="att-status-title">Checking Your Location...</h2>
+        <p class="att-card-sub" id="att-status-sub">Please allow location access when prompted</p>
+
+        <!-- Steps -->
+        <div class="att-steps">
+          <div class="att-step" id="step-loc">
+            <div class="step-dot" id="dot-loc">1</div>
+            <span>Location detected</span>
+          </div>
+          <div class="att-step-line"></div>
+          <div class="att-step" id="step-range">
+            <div class="step-dot" id="dot-range">2</div>
+            <span>Inside campus</span>
+          </div>
+          <div class="att-step-line"></div>
+          <div class="att-step" id="step-mark">
+            <div class="step-dot" id="dot-mark">3</div>
+            <span>Attendance marked</span>
+          </div>
+        </div>
+
+        <!-- Location info -->
+        <div class="location-info" id="location-info" style="display:none;">
+          <div class="loc-row">
+            <span class="loc-label">Your Location:</span>
+            <span class="loc-val" id="your-coords">—</span>
+          </div>
+          <div class="loc-row">
+            <span class="loc-label">School Location:</span>
+            <span class="loc-val" id="school-coords">—</span>
+          </div>
+          <div class="loc-row">
+            <span class="loc-label">Distance:</span>
+            <span class="loc-val" id="your-distance">—</span>
+          </div>
+          <div class="loc-row">
+            <span class="loc-label">Required:</span>
+            <span class="loc-val">Within 100 meters</span>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <button class="att-mark-btn" id="att-mark-btn" style="display:none;">
+          ✅ Mark Present Now
+        </button>
+
+        <!-- Already marked -->
+        <div class="already-marked" id="already-marked" style="display:none;">
+          <div class="am-icon">🎉</div>
+          <h3>Already Marked!</h3>
+          <p>Your attendance for today is recorded.</p>
+          <div class="am-details" id="am-details"></div>
+        </div>
+
+        <!-- Error state -->
+        <div class="att-error" id="att-error" style="display:none;">
+          <div class="err-icon">⚠️</div>
+          <h3 id="err-title">Outside Campus</h3>
+          <p id="err-msg">You are too far from school to mark attendance.</p>
+          <button class="retry-btn" id="retry-btn">🔄 Try Again</button>
+          
+          <!-- Admin shortcut -->
+          <button id="admin-set-loc-btn" style="display:none;margin-top:10px;width:100%;padding:12px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border-radius:10px;font-weight:700;border:none;cursor:pointer;">📍 Set School Location Now</button>
+        </div>
+
+        <!-- Retry / Refresh -->
+        <button class="check-again-btn" id="check-again-btn" style="display:none;">
+          🔄 Check Location Again
+        </button>
+      </div>
+
+      <!-- HISTORY -->
+      <div class="att-history-card">
+        <h3>My Attendance History</h3>
+        <div class="history-stats">
+          <div class="hst-item">
+            <span class="hst-num green" id="hist-present">0</span>
+            <span>Present</span>
+          </div>
+          <div class="hst-item">
+            <span class="hst-num red" id="hist-absent">0</span>
+            <span>Absent</span>
+          </div>
+          <div class="hst-item">
+            <span class="hst-num purple" id="hist-pct">0%</span>
+            <span>Percentage</span>
+          </div>
+        </div>
+        <div class="history-list" id="history-list">
+          <p class="empty-text">No records yet</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+  <script src="attendance.js"></script>
+</body>
+</html>

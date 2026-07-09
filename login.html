@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — NIAT Schools Attendance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+</head>
+<body class="auth-page">
+
+  <div class="auth-bg">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <div class="auth-container">
+    <!-- Brand -->
+    <a href="index.html" class="auth-brand" id="auth-back">
+      <span>🏫</span>
+      <span>NIAT Schools</span>
+    </a>
+
+    <!-- Tab Switcher -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login">Login</button>
+      <button class="auth-tab" id="tab-register">Register</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <form class="auth-form" id="login-form">
+      <h2 class="form-title">Welcome Back 👋</h2>
+      <p class="form-sub">Login to your school account</p>
+
+      <div class="role-selector" style="display:none;">
+        <button type="button" class="role-pill active" data-role="teacher" id="rp-teacher">Teacher</button>
+      </div>
+
+      <div class="input-group">
+        <label>Email / Employee ID</label>
+        <input type="text" id="login-id" placeholder="Enter your ID or Email" required autocomplete="username"/>
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="login-pw" placeholder="Enter password" required autocomplete="current-password"/>
+          <button type="button" class="toggle-pw" id="toggle-login-pw">👁</button>
+        </div>
+      </div>
+      <div class="form-error" id="login-error"></div>
+      <button type="submit" class="form-submit" id="login-submit">Login →</button>
+      <p class="form-switch">Don't have an account? <span class="switch-link" id="to-register">Register here</span></p>
+
+      <div class="demo-note" style="background:transparent;border:none;margin-top:20px;padding:0;">
+        <button type="button" id="to-admin-login" style="background:none;border:none;color:#94a3b8;font-size:0.85rem;cursor:pointer;text-decoration:underline;">Admin Portal Login</button>
+      </div>
+    </form>
+
+    <!-- REGISTER FORM -->
+    <form class="auth-form hidden" id="register-form">
+      <h2 class="form-title">Create Account 🎓</h2>
+      <p class="form-sub">Join NIAT Schools Attendance System</p>
+
+      <div class="role-selector" style="display:none;">
+        <button type="button" class="role-pill active" data-role="teacher" id="rr-teacher">Teacher</button>
+      </div>
+
+      <div class="reg-grid">
+        <div class="input-group">
+          <label>Full Name *</label>
+          <input type="text" id="reg-name" placeholder="Your full name" required/>
+        </div>
+        <div class="input-group" id="reg-roll-group">
+          <label id="reg-roll-label">Employee ID *</label>
+          <input type="text" id="reg-roll" placeholder="e.g. EMP2024001"/>
+        </div>
+        <div class="input-group" id="reg-class-group">
+          <label id="reg-class-label">Department / Subject</label>
+          <input type="text" id="reg-class" placeholder="e.g. Mathematics"/>
+        </div>
+        <div class="input-group">
+          <label>Mobile Number *</label>
+          <input type="tel" id="reg-mobile" placeholder="+91 XXXXX XXXXX" required/>
+        </div>
+        <div class="input-group full-width">
+          <label>Email *</label>
+          <input type="email" id="reg-email" placeholder="your@email.com" required/>
+        </div>
+        <div class="input-group">
+          <label>Password *</label>
+          <div class="pw-wrap">
+            <input type="password" id="reg-pw" placeholder="Min 6 characters" required/>
+            <button type="button" class="toggle-pw" id="toggle-reg-pw">👁</button>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Confirm Password *</label>
+          <input type="password" id="reg-pw2" placeholder="Repeat password" required/>
+        </div>
+      </div>
+
+      <div class="form-error" id="reg-error"></div>
+      <button type="submit" class="form-submit" id="reg-submit">Create Account →</button>
+      <p class="form-switch">Already registered? <span class="switch-link" id="to-login">Login here</span></p>
+    </form>
+
+    <!-- ADMIN LOGIN FORM -->
+    <form class="auth-form hidden" id="admin-login-form">
+      <h2 class="form-title" style="color:#f87171;">Admin Portal 🛡️</h2>
+      <p class="form-sub">Restricted Area</p>
+
+      <div class="input-group">
+        <label>Admin ID</label>
+        <input type="email" id="admin-id" placeholder="admin@niat.com" required autocomplete="username"/>
+      </div>
+      <div class="input-group">
+        <label>Secret Code</label>
+        <div class="pw-wrap">
+          <input type="password" id="admin-pw" placeholder="Enter secret code" required autocomplete="current-password"/>
+          <button type="button" class="toggle-pw" id="toggle-admin-pw">👁</button>
+        </div>
+      </div>
+      <div class="form-error" id="admin-error"></div>
+      <button type="submit" class="form-submit" id="admin-submit" style="background:linear-gradient(135deg, #ef4444, #dc2626); box-shadow:0 6px 20px rgba(239, 68, 68, 0.4);">Access Portal →</button>
+      
+      <p class="form-switch" style="margin-top:20px;">
+        <span class="switch-link" id="admin-to-login">← Back to Teacher Login</span>
+      </p>
+    </form>
+  </div>
+
+  <!-- ✅ Post-Login Quick Action Screen -->
+  <div id="post-login-screen" style="
+    display:none;
+    position:fixed;inset:0;
+    background:linear-gradient(135deg,#020617 0%,#0a0f2e 50%,#020617 100%);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    gap:0;
+    font-family:'Outfit',sans-serif;
+  ">
+    <!-- Animated background orbs -->
+    <div style="position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(124,58,237,0.15),transparent 70%);border-radius:50%;top:-100px;right:-100px;animation:pulse 4s ease-in-out infinite;"></div>
+    <div style="position:absolute;width:300px;height:300px;background:radial-gradient(circle,rgba(6,182,212,0.1),transparent 70%);border-radius:50%;bottom:-50px;left:-50px;animation:pulse 5s ease-in-out infinite reverse;"></div>
+
+    <div style="
+      background:rgba(255,255,255,0.04);
+      backdrop-filter:blur(20px);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:24px;
+      padding:40px 36px;
+      width:90%;
+      max-width:420px;
+      text-align:center;
+      position:relative;
+      z-index:2;
+      animation:slideUp 0.5s cubic-bezier(0.175,0.885,0.32,1.275);
+    ">
+      <!-- Success checkmark -->
+      <div style="
+        width:72px;height:72px;
+        background:linear-gradient(135deg,#10b981,#059669);
+        border-radius:50%;
+        display:flex;align-items:center;justify-content:center;
+        font-size:2rem;
+        margin:0 auto 20px;
+        box-shadow:0 0 30px rgba(16,185,129,0.4);
+        animation:bounceIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) 0.2s both;
+      ">✓</div>
+
+      <h2 style="font-size:1.5rem;font-weight:800;color:#f1f5f9;margin-bottom:6px;">Welcome Back! 👋</h2>
+      <p id="pl-name" style="font-size:1rem;color:#7c3aed;font-weight:600;margin-bottom:6px;">Loading...</p>
+      <p style="font-size:0.82rem;color:#64748b;margin-bottom:28px;">What would you like to do?</p>
+
+      <!-- Mark Attendance Button (Primary) -->
+      <a href="attendance.html" style="
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        width:100%;
+        padding:16px 24px;
+        background:linear-gradient(135deg,#7c3aed,#4f46e5);
+        color:#fff;
+        border-radius:14px;
+        font-size:1rem;
+        font-weight:700;
+        text-decoration:none;
+        margin-bottom:12px;
+        box-shadow:0 8px 24px rgba(124,58,237,0.35);
+        transition:transform 0.2s,box-shadow 0.2s;
+        letter-spacing:0.3px;
+      " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 32px rgba(124,58,237,0.5)'"
+         onmouseout="this.style.transform='';this.style.boxShadow='0 8px 24px rgba(124,58,237,0.35)'">
+        <span style="font-size:1.3rem;">📍</span>
+        Mark Attendance Now
+      </a>
+
+      <!-- Dashboard Button (Secondary) -->
+      <a href="dashboard.html" style="
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        width:100%;
+        padding:14px 24px;
+        background:rgba(255,255,255,0.05);
+        color:#94a3b8;
+        border:1px solid rgba(255,255,255,0.1);
+        border-radius:14px;
+        font-size:0.92rem;
+        font-weight:600;
+        text-decoration:none;
+        transition:background 0.2s,color 0.2s;
+      " onmouseover="this.style.background='rgba(255,255,255,0.09)';this.style.color='#f1f5f9'"
+         onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='#94a3b8'">
+        <span style="font-size:1.1rem;">📊</span>
+        Go to Dashboard
+      </a>
+
+      <p style="margin-top:20px;font-size:0.75rem;color:#334155;">You are securely logged in via Firebase ☁️</p>
+    </div>
+  </div>
+
+  <style>
+    @keyframes slideUp {
+      from { opacity:0; transform:translateY(40px) scale(0.95); }
+      to   { opacity:1; transform:translateY(0)  scale(1); }
+    }
+    @keyframes bounceIn {
+      from { opacity:0; transform:scale(0.3); }
+      to   { opacity:1; transform:scale(1); }
+    }
+    @keyframes pulse {
+      0%,100% { transform:scale(1);   opacity:0.6; }
+      50%      { transform:scale(1.1); opacity:1;   }
+    }
+  </style>
+
+  <script src="app.js"></script>
+</body>
+</html>

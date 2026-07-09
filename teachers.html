@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Students — NIAT Schools Attendance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+</head>
+<body class="app-page">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span>🏫</span>
+      <div><span class="sb-name">NIAT Schools</span><span class="sb-sub">Attendance System</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sb-link" id="sb-dash"><span class="sb-icon">📊</span> Dashboard</a>
+      <a href="attendance.html" class="sb-link" id="sb-att"><span class="sb-icon">📍</span> Mark Attendance</a>
+
+
+      <a href="#" class="sb-link" id="sb-settings"><span class="sb-icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-info"><div class="user-avatar" id="user-avatar-sb">TR</div><div><p class="user-name" id="user-name-sb">Tulasi Ram</p><p class="user-role" id="user-role-sb">Admin</p></div></div>
+      <button class="logout-btn" id="logout-btn">Logout</button>
+    </div>
+  </aside>
+  <button class="hamburger-app" id="ham-app">☰</button>
+  <div class="sidebar-overlay" id="sb-overlay"></div>
+
+  <main class="app-main">
+    <div class="app-header">
+      <div>
+        <h1 class="app-title">Students 👨‍🎓</h1>
+        <p class="app-sub">Manage all registered students</p>
+      </div>
+      <button class="btn-solid" id="add-student-btn">+ Add Student</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+      <input type="text" class="filter-input" id="stu-search" placeholder="🔍 Search by name or roll no..."/>
+      <select class="filter-select" id="stu-class-filter">
+        <option value="">All Classes</option>
+      </select>
+      <select class="filter-select" id="stu-status-filter">
+        <option value="">All Status</option>
+        <option value="present">Present Today</option>
+        <option value="absent">Absent Today</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <div class="table-wrap">
+        <table class="att-table" id="students-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Roll No</th>
+              <th>Class</th>
+              <th>Mobile</th>
+              <th>Email</th>
+              <th>Today</th>
+              <th>Overall %</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="students-tbody">
+            <tr><td colspan="9" class="empty-row">No students registered yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ADD/EDIT STUDENT MODAL -->
+  <div class="modal-overlay" id="student-modal" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="student-modal-title">Add Student</h3>
+        <button class="modal-close" id="close-student-modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="reg-grid">
+          <div class="input-group">
+            <label>Full Name *</label>
+            <input type="text" id="m-name" placeholder="Student full name"/>
+          </div>
+          <div class="input-group">
+            <label>Roll Number *</label>
+            <input type="text" id="m-roll" placeholder="NIAT2024001"/>
+          </div>
+          <div class="input-group">
+            <label>Class / Section</label>
+            <input type="text" id="m-class" placeholder="10-A"/>
+          </div>
+          <div class="input-group">
+            <label>Mobile *</label>
+            <input type="tel" id="m-mobile" placeholder="+91 XXXXX XXXXX"/>
+          </div>
+          <div class="input-group full-width">
+            <label>Email *</label>
+            <input type="email" id="m-email" placeholder="student@email.com"/>
+          </div>
+          <div class="input-group">
+            <label>Password</label>
+            <input type="text" id="m-pw" placeholder="Min 6 chars"/>
+          </div>
+        </div>
+        <div class="form-error" id="m-error"></div>
+        <button class="form-submit" id="save-student-btn" style="margin-top:16px;">Save Student</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW STUDENT MODAL -->
+  <div class="modal-overlay" id="view-student-modal" style="display:none;">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h3>Student Details</h3>
+        <button class="modal-close" id="close-view-modal">✕</button>
+      </div>
+      <div class="modal-body" id="view-student-body"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script src="students.js"></script>
+</body>
+</html>

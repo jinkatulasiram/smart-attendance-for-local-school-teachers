@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NIAT Schools — Smart Attendance System</title>
+  <meta name="description" content="NIAT Schools Smart Attendance System — GPS-based attendance marking, student management, and real-time reports. Built by Tulasi Ram Web Designs."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <!-- ========== NIAT INTRO SPLASH ========== -->
+  <div id="niat-intro">
+    <canvas id="niat-canvas"></canvas>
+
+    <div class="niat-intro-body">
+
+      <!-- Animated Logo -->
+      <div class="niat-logo-wrap">
+        <div class="niat-emblem">
+          <div class="emblem-ring ring-outer"></div>
+          <div class="emblem-ring ring-mid"></div>
+          <div class="emblem-ring ring-inner"></div>
+          <div class="emblem-center">
+            <span class="emblem-icon">🏫</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- NIAT Letters -->
+      <div class="niat-letters">
+        <span class="nl" id="nl-n">N</span>
+        <span class="nl" id="nl-i">I</span>
+        <span class="nl" id="nl-a">A</span>
+        <span class="nl" id="nl-t">T</span>
+      </div>
+
+      <!-- School Name -->
+      <div class="niat-school-name" id="niat-school-name">
+        <span class="nsn-letter" style="--d:0ms">S</span>
+        <span class="nsn-letter" style="--d:60ms">C</span>
+        <span class="nsn-letter" style="--d:120ms">H</span>
+        <span class="nsn-letter" style="--d:180ms">O</span>
+        <span class="nsn-letter" style="--d:240ms">O</span>
+        <span class="nsn-letter" style="--d:300ms">L</span>
+        <span class="nsn-letter" style="--d:360ms">S</span>
+      </div>
+
+      <!-- Tagline -->
+      <p class="niat-tagline" id="niat-tagline">Smart Attendance System</p>
+
+      <!-- Progress Bar -->
+      <div class="niat-progress-wrap">
+        <div class="niat-progress-bar" id="niat-progress-bar"></div>
+      </div>
+      <p class="niat-loading-text" id="niat-loading-text">Initializing...</p>
+
+    </div>
+  </div>
+  <!-- ========== END INTRO ========== -->
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <div class="nav-brand">
+      <div class="brand-icon">🏫</div>
+      <div>
+        <span class="brand-name">NIAT Schools</span>
+        <span class="brand-sub">Attendance System</span>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <a href="login.html" class="btn-outline" id="nav-login">Login</a>
+      <a href="login.html?mode=register" class="btn-solid" id="nav-register">Register</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="orb orb1"></div>
+      <div class="orb orb2"></div>
+      <div class="orb orb3"></div>
+      <div class="grid-overlay"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">📍 GPS-Powered Attendance</div>
+      <h1 class="hero-title">
+        Smart Attendance<br/>
+        <span class="gradient-text">For Modern Schools</span>
+      </h1>
+      <p class="hero-desc">
+        Mark attendance in seconds using your location. Real-time reports, student management, and complete school oversight — all in one place.
+      </p>
+      <div class="hero-btns">
+        <a href="login.html?mode=register" class="btn-primary-lg" id="hero-start">
+          Get Started Free
+          <span class="btn-arrow">→</span>
+        </a>
+        <a href="login.html" class="btn-ghost-lg" id="hero-login">Login to Dashboard</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat">
+          <span class="hstat-num">100m</span>
+          <span class="hstat-label">GPS Accuracy</span>
+        </div>
+        <div class="hstat-divider"></div>
+        <div class="hstat">
+          <span class="hstat-num">3</span>
+          <span class="hstat-label">User Roles</span>
+        </div>
+        <div class="hstat-divider"></div>
+        <div class="hstat">
+          <span class="hstat-num">Live</span>
+          <span class="hstat-label">Reports</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="phone-mockup">
+        <div class="phone-inner">
+          <div class="phone-header">
+            <span class="phone-time">09:00 AM</span>
+            <span class="ph-dot"></span>
+          </div>
+          <div class="phone-card active-card">
+            <div class="card-icon">📅</div>
+            <p class="card-title">Teacher Dashboard</p>
+            <p class="card-sub">Welcome to your daily calendar</p>
+            <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;">
+              <div style="height:20px;background:rgba(16,185,129,0.2);border-radius:4px;"></div>
+              <div style="height:20px;background:rgba(16,185,129,0.2);border-radius:4px;"></div>
+              <div style="height:20px;background:rgba(239,68,68,0.2);border-radius:4px;"></div>
+              <div style="height:20px;background:rgba(16,185,129,0.2);border-radius:4px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features-section">
+    <div class="section-header">
+      <span class="tag">// features</span>
+      <h2 class="section-title">Everything You Need</h2>
+      <p class="section-sub">One platform for students, teachers, and administrators</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card" id="feat-gps">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)">📍</div>
+        <h3>GPS Location Check</h3>
+        <p>Students can only mark attendance when physically present inside the school campus (100m radius).</p>
+      </div>
+      <div class="feat-card" id="feat-roles">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#0891b2,#0e7490)">👥</div>
+        <h3>3 Role System</h3>
+        <p>Separate dashboards for Admin, Teachers, and Students — each with the right tools and permissions.</p>
+      </div>
+
+      <div class="feat-card" id="feat-admin">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#d97706,#b45309)">⚙️</div>
+        <h3>Admin Control</h3>
+        <p>Admin sets school GPS coordinates and radius. Full control over student and teacher records.</p>
+      </div>
+      <div class="feat-card" id="feat-mobile">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#7c3aed,#06b6d4)">📱</div>
+        <h3>Mobile Friendly</h3>
+        <p>Works perfectly on phones. Students can mark attendance directly from their mobile browser.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-section">
+    <div class="section-header">
+      <span class="tag">// how it works</span>
+      <h2 class="section-title">Simple 3-Step Process</h2>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card" id="step1">
+        <div class="step-num">01</div>
+        <h3>Register & Login</h3>
+        <p>Students and teachers register with their details. Admin approves and sets the school location.</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-card" id="step2">
+        <div class="step-num">02</div>
+        <h3>Open Attendance Page</h3>
+        <p>Student opens the attendance page on their phone. The system checks their GPS location instantly.</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-card" id="step3">
+        <div class="step-num">03</div>
+        <h3>Mark & Done!</h3>
+        <p>If inside campus, click "Mark Present" — attendance is recorded with timestamp and location proof.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLES -->
+  <section class="roles-section">
+    <div class="section-header">
+      <span class="tag">// user roles</span>
+      <h2 class="section-title">Choose Your Role</h2>
+    </div>
+    <div class="roles-grid">
+      <div class="role-card admin-card" id="role-admin">
+        <div class="role-badge">Admin</div>
+        <ul>
+          <li>✓ Set school GPS location & radius</li>
+          <li>✓ View all student & teacher records</li>
+          <li>✓ Full attendance reports</li>
+          <li>✓ Manage all accounts</li>
+        </ul>
+        <a href="login.html?role=admin" class="role-btn" id="role-admin-btn">Login as Admin →</a>
+      </div>
+      <div class="role-card teacher-card" id="role-teacher">
+        <div class="role-badge teacher">Teacher</div>
+        <ul>
+          <li>✓ View class attendance</li>
+          <li>✓ Mark own attendance</li>
+          <li>✓ See student list</li>
+          <li>✓ Daily/weekly reports</li>
+        </ul>
+        <a href="login.html?role=teacher" class="role-btn teacher-btn" id="role-teacher-btn">Login as Teacher →</a>
+      </div>
+      <div class="role-card student-card" id="role-student">
+        <div class="role-badge student">Student</div>
+        <ul>
+          <li>✓ Mark GPS attendance</li>
+          <li>✓ View own attendance history</li>
+          <li>✓ See attendance percentage</li>
+          <li>✓ Profile management</li>
+        </ul>
+        <a href="login.html?role=student" class="role-btn student-btn" id="role-student-btn">Login as Student →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-brand">
+      <span class="footer-logo">🏫 NIAT Schools</span>
+      <p>Smart Attendance System</p>
+    </div>
+    <p class="footer-credit">Built with ❤️ by <a href="https://relaxed-sawine-9b41f3.netlify.app" target="_blank" id="footer-portfolio">Tulasi Ram Web Designs</a></p>
+    <p class="footer-copy">© 2024 NIAT Schools. All rights reserved.</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    // Demo phone animation
+    const demoBtn = document.getElementById('demo-mark-btn');
+    const phoneSuccess = document.getElementById('phone-success');
+    if(demoBtn){
+      demoBtn.addEventListener('click', () => {
+        demoBtn.textContent = 'Marking...';
+        demoBtn.disabled = true;
+        setTimeout(() => {
+          demoBtn.closest('.phone-card').style.display = 'none';
+          phoneSuccess.style.display = 'flex';
+          setTimeout(() => {
+            phoneSuccess.style.display = 'none';
+            demoBtn.closest('.phone-card').style.display = 'block';
+            demoBtn.textContent = 'Mark Present ✓';
+            demoBtn.disabled = false;
+          }, 3000);
+        }, 1000);
+      });
+    }
+  </script>
+
+  <!-- NIAT INTRO ANIMATION SCRIPT -->
+  <script>
+  (function() {
+    'use strict';
+
+    const intro   = document.getElementById('niat-intro');
+    const canvas  = document.getElementById('niat-canvas');
+    const ctx     = canvas.getContext('2d');
+    const letters = ['nl-n','nl-i','nl-a','nl-t'];
+    const loadingMsgs = [
+      'Initializing...',
+      'Loading assets...',
+      'Preparing dashboard...',
+      'Ready! ✓'
+    ];
+
+    // Lock body scroll
+    document.body.classList.add('intro-running');
+
+    // --- Canvas Resize ---
+    function resizeCanvas() {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas, { passive: true });
+
+    // --- Particle System ---
+    const isMobile = window.innerWidth < 768;
+    const COUNT    = isMobile ? 40 : 80;
+    const particles = [];
+
+    for (let i = 0; i < COUNT; i++) {
+      particles.push({
+        x:   Math.random() * window.innerWidth,
+        y:   Math.random() * window.innerHeight,
+        vx:  (Math.random() - 0.5) * 0.5,
+        vy:  (Math.random() - 0.5) * 0.5,
+        r:   Math.random() * 2 + 0.5,
+        hue: Math.random() > 0.5 ? 'rgba(124,58,237,' : 'rgba(6,182,212,'
+      });
+    }
+
+    let rafId;
+    function drawParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0 || p.x > canvas.width)  p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.hue + '0.7)';
+        ctx.fill();
+      });
+
+      // Draw connections (skip on mobile)
+      if (!isMobile) {
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx   = particles[i].x - particles[j].x;
+            const dy   = particles[i].y - particles[j].y;
+            const dist = dx*dx + dy*dy;
+            if (dist < 12000) {
+              const alpha = (1 - dist / 12000) * 0.15;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(124,58,237,${alpha})`;
+              ctx.lineWidth   = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      rafId = requestAnimationFrame(drawParticles);
+    }
+    drawParticles();
+
+    // --- Animate NIAT letters one by one ---
+    letters.forEach((id, idx) => {
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('show');
+      }, 700 + idx * 160);
+    });
+
+    // --- Loading text cycle ---
+    const loadEl = document.getElementById('niat-loading-text');
+    loadingMsgs.forEach((msg, i) => {
+      setTimeout(() => {
+        if (loadEl) loadEl.textContent = msg;
+      }, 2400 + i * 420);
+    });
+
+    // --- Exit after 4.5s ---
+    setTimeout(() => {
+      cancelAnimationFrame(rafId);
+      intro.classList.add('exit');
+      document.body.classList.remove('intro-running');
+
+      setTimeout(() => {
+        intro.style.display = 'none';
+      }, 950);
+    }, 4500);
+
+  })();
+  </script>
+
+</body>
+</html>
